@@ -66,9 +66,9 @@ function renderSvg(
       const fontSize = Math.min(
         Math.floor(
           (Math.min(width, height) / 5) *
-            Math.pow(1 - 0.0205, Math.floor(descWordCount / 2))
+            Math.pow(1 - 0.021, Math.floor(descWordCount / 2))
         ),
-        120 // max font size
+        900 // max font size
       );
 
       // estimate the width of the text for warping, split into multiple lines with \n if necessary
@@ -157,11 +157,19 @@ router.get(
     if (dimensionsSplit.length === 1) {
       dimensionsSplit[1] = dimensionsSplit[0];
     }
-    const width = dimensionsSplit[0] || defaultBackground.width;
-    const height = dimensionsSplit[1] || defaultBackground.height;
+    let width = dimensionsSplit[0] || defaultBackground.width;
+    let height = dimensionsSplit[1] || defaultBackground.height;
 
     if (isNaN(Number(width)) || isNaN(Number(height))) {
       return res.status(400).send('Invalid width or height');
+    }
+
+    // cap either width or height at 10000 px
+    if (Number(width) > 10000) {
+      width = 10000;
+    }
+    if (Number(height) > 10000) {
+      height = 10000;
     }
 
     const png = await renderSvg(
@@ -177,7 +185,7 @@ router.get(
 
     res.writeHead(200, {
       'Content-Type': 'image/png',
-      'Content-Length': (png as Buffer).length,
+      'Content-Length': (png as Buffer).length || 0,
     });
     res.end(png);
 

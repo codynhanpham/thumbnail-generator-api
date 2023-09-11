@@ -38,11 +38,19 @@ router.get(
     if (dimensionsSplit.length === 1) {
       dimensionsSplit[1] = dimensionsSplit[0];
     }
-    const width = dimensionsSplit[0] || defaultColor.width;
-    const height = dimensionsSplit[1] || defaultColor.height;
+    let width = dimensionsSplit[0] || defaultColor.width;
+    let height = dimensionsSplit[1] || defaultColor.height;
 
     if (isNaN(Number(width)) || isNaN(Number(height))) {
       return res.status(400).send('Invalid width or height');
+    }
+
+    // cap either width or height at 10000 px
+    if (Number(width) > 10000) {
+      width = 10000;
+    }
+    if (Number(height) > 10000) {
+      height = 10000;
     }
 
     const image = await new Jimp(
@@ -59,7 +67,7 @@ router.get(
 
     res.writeHead(200, {
       'Content-Type': 'image/png',
-      'Content-Length': buffer.length,
+      'Content-Length': buffer.length || 0,
     });
     res.end(buffer);
 

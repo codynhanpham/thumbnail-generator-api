@@ -7,7 +7,6 @@ A super simple API to generate image placeholders of any color and size, as well
 1. [Endpoints](#endpoints)
     - [`/color/:options?`](#coloroptions)
     - [`/thumbnail/:description?/:backgroundOptions?`](#thumbnaildescriptionbackgroundoptions)
-    - [`/`](#)
 
 2. [Code Example](#code-example)
 3. [Setup](#running-the-server)
@@ -19,6 +18,7 @@ A super simple API to generate image placeholders of any color and size, as well
 **Assuming the server is running on `localhost:3000`, the following endpoints are available:**
 
 ## `/color/:options?`
+![color-endpoint-demo](demo/61B8E1@1200x220.png)
 Generates a placeholder image of a given color and size. The **options** for this endpoint are in this format:
 
 ### **`fullsize hexcode` `alpha as hexadecimal`@`width`x`height`**
@@ -32,7 +32,7 @@ Option | Description
 ------------ | --------------------------------------------------------
 `width`x`height` | If omitted altogether, the default size is `512x512 px`
 `width`/`height` | If only one dimension is specified, the image is a square with that dimension
-`alpha` | If omitted, the default opacity is `ff` (100%, no transparency)
+`alpha` | If omitted, the default opacity is `ff` (100%, no transparency). Cannot be specified without `hexcode`.
 `hexcode` | If omitted, the default color is randomized
 
 Examples:
@@ -40,11 +40,16 @@ Examples:
 - `http://localhost:3000/color/ff000080@128` - A red square with 128 px sides and 50% opacity
 - `http://localhost:3000/color/@640x960` - A random color rectangle with 640x960 px sides
 
+</br>
+
+
 ## `/thumbnail/:description?/:backgroundOptions?`
+![thumbnail-endpoint-demo](demo/7D4340@1200x220.png)
 Generates a placeholder image of a given size, with a text overlay.
 
 ### **`description`**
-The text string to be displayed on the image. If omitted altogether along with the `backgroundOptions`, the default text is randomized.
+The text string to be displayed on the image. Except for the `whitespace` character, you might need to convert special characters to their corresponding HTML entities/escape sequences. For example, `#` should be converted to `%23`, and `&` should be converted to `%26`. See [this page](https://www.w3schools.com/tags/ref_urlencode.ASP) for a list of HTML entities.
+If omitted altogether along with the `backgroundOptions`, the default text is randomized.
 
 *Currently, the `description` length is limited to 25 words.*
 
@@ -123,6 +128,7 @@ async function randomThumbnail(width, height) {
 
 randomThumbnail(1920, 1080);
 ```
+![random-thumbnail.png](demo/06916E@1920x1080.png)
 
 </br>
 

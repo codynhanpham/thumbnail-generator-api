@@ -1,0 +1,19 @@
+version: '2'
+
+services:
+  thumbnail-gen:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    env_file:
+      - .env
+    volumes:
+      - ./build:/usr/src/app/build
+    container_name: thumbnail-gen
+    expose:
+      - '3000'
+    ports:
+      - '80:3000'
+    restart: always
+    command: npm run start

@@ -1,0 +1,8 @@
+node_modules
+build
+
+# lint and fix
+.editorconfig
+.eslintignore
+.eslintrc.json
+.prettierrc.js

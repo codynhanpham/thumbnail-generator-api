@@ -25,7 +25,7 @@ app.get('/ping', (req: Request, res: Response, next: NextFunction) => {
 });
 
 app.get('/', (req: Request, res: Response, next: NextFunction) => {
-  fetch(`http://localhost:${port}/thumbnail/${randomString(randomInt(12, 40))}/@1920x1080`)
+  fetch(`http://localhost:${port}/thumbnail?background=@1920x1080`)
     .then((response: FetchResponse) => {
       return response.buffer();
     })
@@ -49,22 +49,3 @@ app.use('/', thumbnailGenRouter);
 app.listen(port, () => {
   console.log(`Server started at http://localhost:${port}`);
 });
-
-function randomString(length: number) {
-  let result = '';
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
-  // also, every 4-6 characters, insert a space
-  const spaceInterval = Math.floor(Math.random() * 3) + 4;
-  for (let i = 0; i < length; i++) {
-    if (i % spaceInterval === 0) {
-      result += ' ';
-    }
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-}
-
-function randomInt(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}

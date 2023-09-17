@@ -1,12 +1,14 @@
 # Basic Thumbnail Generator API
 A super simple API to generate image placeholders of any color and size, as well as "thumbnails" with text overlay.
 
+**Demo webpage:** https://imagen.cnp.is/
+
 </br>
 
 # Table of Contents
 1. [Endpoints](#endpoints)
-    - [`/color/:options?`](#coloroptions)
-    - [`/thumbnail/:description?/:backgroundOptions?`](#thumbnaildescriptionbackgroundoptions)
+    - [`/color`](#color)
+    - [`/thumbnail`](#thumbnail)
 
 2. [Code Example](#code-example)
 3. [Setup](#running-the-server)
@@ -17,95 +19,106 @@ A super simple API to generate image placeholders of any color and size, as well
 # Endpoints
 **Assuming the server is running on `localhost:3000`, the following endpoints are available:**
 
-## `/color/:options?`
+## `/color`
 ![color-endpoint-demo](demo/61B8E1@1200x220.png)
-Generates a placeholder image of a given color and size. The **options** for this endpoint are in this format:
+Generates a placeholder image of a given color and size.
 
-### **`fullsize hexcode` `alpha as hexadecimal`@`width`x`height`**
+***Response type***: arrayBuffer
 
-Examples:
-- `http://localhost:3000/color/ff0000@256x256` - A red square with 256 px sides
+### Parameters:
+#### **`color`** *(optional)*
+The color and size option of the image. The parameter value is in this format:
+
+**`fullsize hexcode` `alpha as hexadecimal`@`width`x`height`**
+
+Each part of the request is optional, with the following *defaults*:
+- `fullsize hexcode`: Randomized
+- `alpha as hexadecimal`: `ff` (100%, no transparency)
+- `width`x`height`: `1200x630` px
+- If either `width` or `height` is omitted, the image is a square with the specified dimension
+
+#### **`svg`** *(optional)*
+If this parameter is present (the value is `true`), the server will return an SVG image instead of a PNG image.
+
+*Default:* `false`
+
+#### **`preview`** *(optional)*
+Applicable only when `svg` is `true`. If this parameter is present (the value is `true`/`preview`), the server will return an HTML page with the SVG image embedded. Otherwise, the server will return the SVG image directly.
+
+*Default:* `true`
+
+### Short-hand route: `/color/:options?/:svg?/:preview?`
+The above dynamic route can be used in place of the `/color` endpoint params. When using short-hand route, the order of the params are significant.
+
+### Examples:
+- `http://localhost:3000/color/ff0000` - A red square with 1200x630 px sides
 - `http://localhost:3000/color/0080ff80@1920x1080` - A light blue rectangle with 1920x1080 px sides and 50% opacity
+- `http://localhost:3000/color/@640x960/svg/nopreview` - A random color rectangle with 640x960 px sides, in SVG format, with no preview HTML.
 
-### Parts of the options can be *omitted*, in which case the following defaults are used:
-Option | Description
------------- | --------------------------------------------------------
-`width`x`height` | If omitted altogether, the default size is `512x512 px`
-`width`/`height` | If only one dimension is specified, the image is a square with that dimension
-`alpha` | If omitted, the default opacity is `ff` (100%, no transparency). Cannot be specified without `hexcode`.
-`hexcode` | If omitted, the default color is randomized
-
-Examples:
-- `http://localhost:3000/color/00aa00` - A green square with 512 px sides
-- `http://localhost:3000/color/ff000080@128` - A red square with 128 px sides and 50% opacity
-- `http://localhost:3000/color/@640x960` - A random color rectangle with 640x960 px sides
+- `http://localhost:3000/color/?svg=true&preview=false` - A random color square with 1200x630 px sides, in SVG format, with no preview HTML.
 
 </br>
 
 
-## `/thumbnail/:description?/:backgroundOptions?`
+## `/thumbnail`
 ![thumbnail-endpoint-demo](demo/7D4340@1200x220.png)
 Generates a placeholder image of a given size, with a text overlay.
 
-### **`description`**
-The text string to be displayed on the image. Except for the `whitespace` character, you might need to convert special characters to their corresponding HTML entities/escape sequences. For example, `#` should be converted to `%23`, and `&` should be converted to `%26`. See [this page](https://www.w3schools.com/tags/ref_urlencode.ASP) for a list of HTML entities.
-If omitted altogether along with the `backgroundOptions`, the default text is randomized.
+***Response type***: arrayBuffer
 
-*Currently, the `description` length is limited to 25 words.*
+### Parameters:
 
-Examples:
-- `http://localhost:3000/thumbnail/` - A 1200x630 px image of random color with a random text in the center. **This is literally the thumbnail placeholder generator!**
-- `http://localhost:3000/thumbnail/Hello World!` - A 1200x630 px image of random color with the text "Hello World!" in the center
+#### **`description`** *(optional)*
+The text string to be displayed on the image. Except for the `whitespace` character, you might need to convert special characters to their corresponding HTML entities/escape sequences. For example, `#` should be converted to `%23`. See [this page](https://www.w3schools.com/tags/ref_urlencode.ASP) for a list of HTML entities. Many characters are not supported, though, so you might need to experiment a bit.
+*Also, the `description` length is limited to 25 words.*
 
-### **`backgroundOptions`**
-Behaves the same as the `options` for the [`/color` endpoint](#coloroptions). All of the omitting rules apply here as well!
+*Default:* Ramdomized string `[A-Z][a-z][0-9][-_]`
 
-**!!! One exception is that the default **`width`x`height`** is `1200x630`.** This is the recommended size for the HTML meta image tags of most social media platforms.
+#### **`background`** *(optional)*
+Behaves the same as the `color` parameter of the [`/color` endpoint](#color). All of the omitting rules apply here as well!
 
-Examples:
-- `http://localhost:3000/thumbnail/Hello World!/ff0000@256x256` - A red square with 256 px sides, with the text "Hello World!" in the center
-- `http://localhost:3000/thumbnail/Hello World!/0080ff80@1920x1080` - A light blue rectangle with 1920x1080 px sides and 50% opacity, with the text "Hello World!" in the center
-- `http://localhost:3000/thumbnail/Hello World!/@640x960` - A random color rectangle with 640x960 px sides, with the text "Hello World!" in the center
+*Default:* `@1200x630`
 
-### Note that you cannot omit the `description` while specify the `backgroundOptions`!
-This is intended to be a thumbnail generator, so the text is *(kind of)* required. It makes much sense to myself, though you can always implement a random string generator to fill in the blanks (see [code example](#random-thumbnail-text-with-image-size-1920x1080-px)).
+#### **`svg`** *(optional)*
+If this parameter is present (the value is `true`), the server will return an SVG image instead of a PNG image.
 
-***<ins>Warning:</ins>*** **The following will not work!**
-- `http://localhost:3000/thumbnail//ff0000@256x256` - **This will not work!** (of course it doesn't ~)
+*Default:* `false`
+
+#### **`preview`** *(optional)*
+Applicable only when `svg` is `true`. If this parameter is present (the value is `true`/`preview`), the server will return an HTML page with the SVG image embedded. Otherwise, the server will return the SVG image directly.
+
+Since the app uses a custom font, using the preview HTML will render the image preview correctly. The SVG image itself does not contain the font to reduce the file transfer size. If you want to use the SVG image directly in your app, you will need to download the font and embed it in the SVG image yourself.
+
+*Default:* `true`
+
+### Short-hand route: `/thumbnail/:description?/:background?/:svg?/:preview?`
+The above dynamic route can be used in place of the `/thumbnail` endpoint params. When using short-hand route, the order of the params are significant.
+
+### Examples:
+- `http://localhost:3000/thumbnail/Hello World` - A random color square with 1200x630 px sides, with the text "Hello World" in the center.
+- `http://localhost:3000/thumbnail/Hello World/@1920x1080` - A random color rectangle with 1920x1080 px sides, with the text "Hello World" in the center.
+- `http://localhost:3000/thumbnail/Hello World/@1920x1080/svg/nopreview` - A random color rectangle with 1920x1080 px sides, with the text "Hello World" in the center, in SVG format, with no preview HTML.
+
+- `http://localhost:3000/thumbnail/?svg=true&preview=false` - A random color square with 1200x630 px sides, with the text "Hello World" in the center, in SVG format, with no preview HTML.
+- `http://localhost:3000/thumbnail/?background=@1920x1080` - A random color rectangle with 1920x1080 px sides, with the text "Hello World" in the center.
+
+</br>
+
 
 ## `/`
-The root of the server. This return a random thumbnail of size `1920x1080` px.
+The root of the server. This return a random **thumbnail** of size `1920x1080` px.
 
 </br>
 
 # Code Example
 
 ### Random thumbnail text with image size `1920x1080` px
-The implemetation to "fix" the [limitation (*?*) above](#note-that-you-cannot-omit-the-description-while-specify-the-backgroundoptions). This is also similar to what behind the `/` endpoint.
 
 **JavaScript**
 ```javascript
-function randomString(length) {
-    let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
-    // also, every 4-6 characters, insert a space
-    const spaceInterval = Math.floor(Math.random() * 3) + 4;
-    for (let i = 0; i < length; i++) {
-        if (i % spaceInterval === 0) {
-            result += ' ';
-        }
-        result += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return result;
-}
-
-function randomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
 async function randomThumbnail(width, height) {
     const result = await fetch(
-        `http://localhost:3000/thumbnail/${randomString(randomInt(12, 40))}/@${width}x${height}`
+        `http://localhost:3000/thumbnail/?background=@${width}x${height}`
     ).catch(err => { console.error(err) }
     );
     
@@ -115,15 +128,15 @@ async function randomThumbnail(width, height) {
             .reduce((data, byte) => data + String.fromCharCode(byte), '')
     );
 
-    // make into a data URI (try copy and paste the result into your browser!)
-    const dataURI = `data:image/png;base64,${imageBase64}`;
-    console.log(dataURI); // data:image/png;base64,iVBORw0KGgoAAAAN...
-
     // save the image to a file
     const fs = require('fs'); // should move this to the top of the file in practice
     fs.writeFileSync('random-thumbnail.png', imageBase64, 'base64', function(err) {
         console.error(err);
     });
+
+    // make into a data URI (try copy and paste the result into your browser!)
+    const dataURI = `data:image/png;base64,${imageBase64}`;
+    console.log(dataURI); // data:image/png;base64,iVBORw0KGgoAAAAN...
 }
 
 randomThumbnail(1920, 1080);

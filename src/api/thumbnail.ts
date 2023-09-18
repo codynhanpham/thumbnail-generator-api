@@ -55,7 +55,7 @@ function renderSvg(
   alpha: string,
   width: number,
   height: number
-): Promise<{buffer: Buffer, svg: string}> {
+): Promise<{buffer: Buffer; svg: string}> {
   return new Promise((resolve, reject) => {
     try {
       const svgImage = svg.newInstance();
@@ -131,7 +131,10 @@ function renderSvg(
   });
 }
 
-async function generateThumbnail(description: string, background: string): Promise<{buffer?: Buffer, svg?: string, error?: string}> {
+async function generateThumbnail(
+  description: string,
+  background: string
+): Promise<{buffer?: Buffer; svg?: string; error?: string}> {
   return new Promise(async (resolve, reject) => {
     const defaultBackground = randomBackground(1200, 630);
     const defaultText = randomString(randomInt(12, 40));
@@ -196,34 +199,42 @@ async function generateThumbnail(description: string, background: string): Promi
     }
 
     resolve({
-      buffer: png? png.buffer : undefined,
-      svg: png? png.svg : undefined,
+      buffer: png ? png.buffer : undefined,
+      svg: png ? png.svg : undefined,
       error: undefined,
-    })
-  })
+    });
+  });
 }
 
 router.get(
   '/thumbnail/:description?/:background?/:svg?/:preview?',
   async (req: Request, res: Response, next: NextFunction) => {
     // also handle the request as query params (all as strings)
-    const description = (req.params.description || req.query.description || '') as string;
-    const background = (req.params.background || req.query.background || '') as string;
+    const description = (req.params.description ||
+      req.query.description ||
+      '') as string;
+    const background = (req.params.background ||
+      req.query.background ||
+      '') as string;
     const asSVGstr = (req.params.svg || req.query.svg || '') as string;
-    const previewStr = (req.params.preview || req.query.preview || 'true') as string;
+    const previewStr = (req.params.preview ||
+      req.query.preview ||
+      'true') as string;
 
     const trueOps = ['svg', 'true', '1', 'yes', 't', 'y'];
     const asSVG = trueOps.includes(asSVGstr.toLowerCase());
     trueOps.push('preview');
     const preview = trueOps.includes(previewStr.toLowerCase());
 
-    const png = await generateThumbnail(description, background).catch((err: Error) => {
-      return {
-        buffer: undefined,
-        svg: undefined,
-        error: err,
-      };
-    });
+    const png = await generateThumbnail(description, background).catch(
+      (err: Error) => {
+        return {
+          buffer: undefined,
+          svg: undefined,
+          error: err,
+        };
+      }
+    );
 
     if (png.error) {
       res.status(400).send(png.error);
@@ -250,7 +261,7 @@ router.get(
       // embed the font into the svg
       let svgString = png.svg.replace(
         '</svg>',
-        `<style>@import url('https://fonts.googleapis.com/css2?family=Dongle&family=Open+Sans&display=swap');</style></svg>`
+        "<style>@import url('https://fonts.googleapis.com/css2?family=Dongle&family=Open+Sans&display=swap');</style></svg>"
       );
       // also replace "Dongle-Regular" with "Dongle"
       svgString = svgString.replace(/Dongle-Regular/g, 'Dongle');

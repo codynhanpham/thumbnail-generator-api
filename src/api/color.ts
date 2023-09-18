@@ -26,7 +26,7 @@ function renderSvg(
   alpha: string,
   width: number,
   height: number
-): Promise<{buffer: Buffer, svg: string}> {
+): Promise<{buffer: Buffer; svg: string}> {
   return new Promise((resolve, reject) => {
     try {
       const svgImage = svg.newInstance();
@@ -55,7 +55,9 @@ function renderSvg(
 }
 
 // refactor the color generation into a separate function
-async function generateColor(color: string): Promise<{buffer?: Buffer, svg?: string, error?: string}> {
+async function generateColor(
+  color: string
+): Promise<{buffer?: Buffer; svg?: string; error?: string}> {
   return new Promise(async (resolve, reject) => {
     const defaultColor = randomColor(1200, 630);
     if (!color) {
@@ -106,10 +108,10 @@ async function generateColor(color: string): Promise<{buffer?: Buffer, svg?: str
     }
 
     resolve({
-      buffer: png? png.buffer : undefined,
-      svg: png? png.svg : undefined,
+      buffer: png ? png.buffer : undefined,
+      svg: png ? png.svg : undefined,
       error: undefined,
-    })
+    });
   });
 }
 
@@ -119,22 +121,23 @@ router.get(
     // also handle the request as query params (all as strings)
     const color = (req.params.color || req.query.color || '') as string;
     const asSVGstr = (req.params.svg || req.query.svg || '') as string;
-    const previewStr = (req.params.preview || req.query.preview || 'true') as string;
+    const previewStr = (req.params.preview ||
+      req.query.preview ||
+      'true') as string;
 
     const trueOps = ['svg', 'true', '1', 'yes', 't', 'y'];
     const asSVG = trueOps.includes(asSVGstr.toLowerCase());
     trueOps.push('preview');
     const preview = trueOps.includes(previewStr.toLowerCase());
 
-
     const png = await generateColor(color).catch((err: Error) => {
       return {
         buffer: undefined,
         svg: undefined,
-        error: err
-      }
+        error: err,
+      };
     });
-    
+
     if (png.error) {
       res.status(400).send(png.error);
       return;

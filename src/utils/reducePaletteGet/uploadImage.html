@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reduce Palette</title>
+    <link rel="icon" href="./pic.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dongle&family=Open+Sans&display=swap" rel="stylesheet">
+
+    <style>
+        /* style the scroll bar: thinner, rounded, dark theme */
+        ::-webkit-scrollbar {
+            width: 0.5rem;
+            height: 0.5rem;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #535151;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #e0e0e0b4;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        /* ---- */
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;
+            font-family: 'Dongle', sans-serif;
+            background: #111111;
+            color: #f1f1f1;
+            font-size: clamp(1.125rem, 0.9091rem + 0.9091vw, 2rem);
+
+            /* flex to center everything */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        textarea {
+            border-radius: 1em;
+        }
+
+        .uploadImage, .URLText {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+
+            max-inline-size: max-content;
+            width: 100%;
+            height: 6vh;
+            margin: 2rem;
+            padding: 1rem;
+        }
+
+        .URLText {
+            min-width: 54vw;
+            height: 40vh;
+        }
+
+        .uploadImage img {
+            display: block;
+            position: relative;
+            /* height min of 40px and 70% */
+            height: clamp(2rem, 1.25rem + 0.625rem, 3.5rem);
+            /* contain */
+            object-fit: contain;
+            margin: 0 1.2rem;
+            filter: invert(0.9);
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .uploadImageButton {
+            display: block;
+            position: relative;
+            width: 100%;
+            margin: 0 0;
+            font-family: 'Dongle', sans-serif;
+            font-weight: 400;
+            font-size: clamp(1rem, 0.5065rem + 2.0779vw, 3rem);
+        }
+
+
+        #uploadImage, #URLText {
+            background-color: #d2cccc81;
+            color: #00000000;
+            font-family: 'Dongle', sans-serif;
+            font-weight: 400;
+            font-size: clamp(1rem, 0.5065rem + 2.0779vw, 3rem);
+            padding: 1rem;
+            margin: 1rem;
+            border-radius: 1rem;
+            text-align: center;
+            position: absolute;
+            transition: 100ms;
+            scale: 1;
+        }
+        ::-webkit-file-upload-button {
+            display: none;
+        }
+        ::file-selector-button {
+            display: none;
+        }
+
+        #uploadImage {
+            min-width: 50vw;
+        }
+
+        #uploadImage:hover {
+            background-color: #d2cccc93;
+            cursor: pointer;
+            scale: 0.99;
+            transition: 100ms;
+        }
+
+        #URLText {
+            position: relative;
+            color: #f1f1f1;
+            width: 100%;
+            height: 80%;
+        }
+        ::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+            color: #f1f1f160;
+            opacity: 1; /* Firefox */
+        }
+
+        :-ms-input-placeholder { /* Internet Explorer 10-11 */
+            color: #f1f1f160;
+        }
+
+        ::-ms-input-placeholder { /* Microsoft Edge */
+            color: #f1f1f160;
+        }
+    </style>
+</head>
+<body>
+    <div class="uploadImage">
+        <label for="uploadImage" class="uploadImageButton">Upload Image File</label>
+        <input type="file" id="uploadImage" accept=".jpeg, .png, .webp, .gif, .avif, .tiff, .svg" onchange="uploadImage(this.files)" />
+        <img src="./upload_icon.png" alt="Upload Text Files" id="uploadImageButton"/>
+    </div>
+
+    <div class="URLText">
+        <textarea id="URLText" placeholder="Or Enter Image URL"></textarea>
+    </div>
+    <script>
+        function uploadImage(files) {
+            if (files.length > 0) {
+                // check if file is an image of type jpeg, png, webp, gif, avif, tiff, svg
+                if (files[0].type == "image/jpeg" || files[0].type == "image/png" || files[0].type == "image/webp" || files[0].type == "image/gif" || files[0].type == "image/avif" || files[0].type == "image/tiff" || files[0].type == "image/svg+xml") {
+                    // check file size below 2mb
+                    if (files[0].size > 2 * 1024 * 1024) {
+                        alert("File size is too large. File size must be below 2MB.");
+                        return;
+                    }
+                    // convert the file to a base64 string
+                    const reader = new FileReader();
+                    reader.readAsDataURL(files[0]);
+
+                    reader.onload = async function () {
+                        // only take the base64 string
+                        const base64 = reader.result.split(",")[1];
+                        let formData = new FormData();
+                        formData.append('image', base64);
+                        formData.append('colorCount', 16);
+                        // send a post request to the server at /reducePallete with the base64 string and in the json body
+                        const imageReduced = await fetch("/reduce-palette", {
+                            method: "POST",
+                            body: formData
+                        })
+                        // if the response is not ok, then return the page with the error
+                        if (!imageReduced.ok) {
+                            const imageBase64 = btoa(
+                                new Uint8Array(await imageReduced.arrayBuffer())
+                                    .reduce((data, byte) => data + String.fromCharCode(byte), '')
+                            );
+                            // decode back to a string
+                            const imageString = atob(imageBase64);
+                            document.write(imageString);
+
+                            return;
+                        }
+
+                        // response is an array buffer, so make a new html page with content type image/png
+                        const imageBase64 = btoa(
+                            new Uint8Array(await imageReduced.arrayBuffer())
+                                .reduce((data, byte) => data + String.fromCharCode(byte), '')
+                        );
+
+                        const base64ImageData = `data:image/png;base64,${imageBase64}`;
+                        const contentType = 'image/png';
+
+                        const byteCharacters = atob(base64ImageData.substr(`data:${contentType};base64,`.length));
+                        const byteArrays = [];
+
+                        for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
+                            const slice = byteCharacters.slice(offset, offset + 1024);
+
+                            const byteNumbers = new Array(slice.length);
+                            for (let i = 0; i < slice.length; i++) {
+                                byteNumbers[i] = slice.charCodeAt(i);
+                            }
+
+                            const byteArray = new Uint8Array(byteNumbers);
+
+                            byteArrays.push(byteArray);
+                        }
+                        const blob = new Blob(byteArrays, {type: contentType});
+                        const blobUrl = URL.createObjectURL(blob);
+
+                        window.open(blobUrl, '_blank');
+                    };
+                    reader.onerror = function (error) {
+                        console.log('Error: ', error);
+                    };
+                } else {
+                    alert("File type is not supported. File type must be jpeg, png, webp, gif, avif, tiff, or svg.");
+                }
+            }
+        }
+
+        // listen for enter key in the text area
+        document.getElementById("URLText").addEventListener("keyup", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                // send a post request to the server at /reduce-palette with the image of the url string and in the json body
+                const url = document.getElementById("URLText").value;
+                const colorCount = 16;
+                const formData = new FormData();
+                formData.append('image', url);
+                formData.append('colorCount', colorCount);
+                fetch("/reduce-palette", {
+                    method: "POST",
+                    body: formData
+                }).then(async (imageReduced) => {
+                    // if the response is not ok, then return the page with the error
+                    if (!imageReduced.ok) {
+                        const imageBase64 = btoa(
+                            new Uint8Array(await imageReduced.arrayBuffer())
+                                .reduce((data, byte) => data + String.fromCharCode(byte), '')
+                        );
+                        // decode back to a string
+                        const imageString = atob(imageBase64);
+                        document.write(imageString);
+
+                        return;
+                    }
+
+                    // response is an array buffer, so make a new html page with content type image/png
+                    const imageBase64 = btoa(
+                        new Uint8Array(await imageReduced.arrayBuffer())
+                            .reduce((data, byte) => data + String.fromCharCode(byte), '')
+                    );
+
+                    const base64ImageData = `data:image/png;base64,${imageBase64}`;
+                    const contentType = 'image/png';
+
+                    const byteCharacters = atob(base64ImageData.substr(`data:${contentType};base64,`.length));
+                    const byteArrays = [];
+
+                    for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
+                        const slice = byteCharacters.slice(offset, offset + 1024);
+
+                        const byteNumbers = new Array(slice.length);
+                        for (let i = 0; i < slice.length; i++) {
+                            byteNumbers[i] = slice.charCodeAt(i);
+                        }
+
+                        const byteArray = new Uint8Array(byteNumbers);
+
+                        byteArrays.push(byteArray);
+                    }
+                    const blob = new Blob(byteArrays, {type: contentType});
+                    const blobUrl = URL.createObjectURL(blob);
+
+                    window.open(blobUrl, '_blank');
+                });
+            }
+        });
+
+    </script>
+</body>
+</html>

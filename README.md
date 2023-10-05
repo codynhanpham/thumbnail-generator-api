@@ -7,8 +7,8 @@ A super simple API to generate image placeholders of any color and size, as well
 
 # Table of Contents
 1. [Endpoints](#endpoints)
-    - [`/color`](#color)
-    - [`/thumbnail`](#thumbnail)
+    - [`/color`](#get-color)
+    - [`/thumbnail`](#get-thumbnail)
 
 2. [Code Example](#code-example)
 3. [Setup](#running-the-server)
@@ -19,7 +19,7 @@ A super simple API to generate image placeholders of any color and size, as well
 # Endpoints
 **Assuming the server is running on `localhost:3000`, the following endpoints are available:**
 
-## `/color`
+## GET `/color`
 ![color-endpoint-demo](demo/61B8E1@1200x220.png)
 Generates a placeholder image of a given color and size.
 
@@ -60,7 +60,7 @@ The above dynamic route can be used in place of the `/color` endpoint params. Wh
 </br>
 
 
-## `/thumbnail`
+## GET `/thumbnail`
 ![thumbnail-endpoint-demo](demo/7D4340@1200x220.png)
 Generates a placeholder image of a given size, with a text overlay.
 

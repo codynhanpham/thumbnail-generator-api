@@ -1,0 +1,50 @@
+name: imagen.cnp.is CI
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x, 21.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm install
+    - run: npm run compile
+    - run: npm test
+    
+    env:
+        CI: true
+
+  build:
+    needs: [test]
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Deploy to Digital Ocean at imagen.cnp.is
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          cd ~/app/thumbnail-generator-api
+          git pull origin main
+          rm .env
+          echo "PORT=${{ secrets.APP_PORT }}" > .env
+          npm run deploy
+          pm2 restart imagen

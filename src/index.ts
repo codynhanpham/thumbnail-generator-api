@@ -7,8 +7,6 @@ const {rateLimit} = require('express-rate-limit');
 
 const imageGenRouter = require('./api/color');
 const thumbnailGenRouter = require('./api/thumbnail');
-const palette = require('./api/palette');
-const reducePalette = require('./api/reducePalette');
 
 const port = process.env.PORT || 3000; // default port to listen
 
@@ -46,8 +44,6 @@ app.get('/', (req: Request, res: Response, next: NextFunction) => {
 
 app.use('/', imageGenRouter);
 app.use('/', thumbnailGenRouter);
-// app.use('/', palette);
-// app.use('/', reducePalette);
 
 // Start the Express server
 app.listen(port, () => {

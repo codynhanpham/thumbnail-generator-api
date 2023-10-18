@@ -1,6 +1,6 @@
 node_modules
 build
-tests
+experiments
 misc
 
 # lint and fix

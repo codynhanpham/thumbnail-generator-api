@@ -22,7 +22,7 @@
     "test": "exit 0",
     "start": "npm run compile && node build/index.js",
     "dev": "nodemon",
-    "deploy": "npm install && npm run compile && pm2 start build/index.js --name thumbnail-generator-api"
+    "deploy": "npm install && npm run compile && pm2 start build/index.js --name imagen"
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.4.1",

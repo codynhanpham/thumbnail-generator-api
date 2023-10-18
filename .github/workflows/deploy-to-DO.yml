@@ -43,5 +43,7 @@ jobs:
         script: |
           cd ~/app/thumbnail-generator-api
           git pull origin main
+          rm .env
+          echo "PORT=${{ secrets.APP_PORT }}" > .env
           npm run deploy
           pm2 restart imagen

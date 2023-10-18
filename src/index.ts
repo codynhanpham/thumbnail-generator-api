@@ -46,8 +46,8 @@ app.get('/', (req: Request, res: Response, next: NextFunction) => {
 
 app.use('/', imageGenRouter);
 app.use('/', thumbnailGenRouter);
-app.use('/', palette);
-app.use('/', reducePalette);
+// app.use('/', palette);
+// app.use('/', reducePalette);
 
 // Start the Express server
 app.listen(port, () => {
